@@ -1,0 +1,70 @@
+[project]
+name = "good_diagrams"
+version = "0.1.0"
+description = "A lightweight package for constructing GOOD neural network diagrams"
+authors = [
+    { name = "McGregor Joyner", email = "mcgsjoyner@gmail.com" },
+]
+requires-python = ">=3.9"
+readme = "README.rst"
+keywords = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = []
+
+[project.optional-dependencies]
+notebooks = [
+    "jupyter>=1.0.0",
+]
+[project.license]
+text = "MIT license"
+
+[project.urls]
+Homepage = "https://github.com/mcgsjoyner/GOOD-diagrams"
+
+[build-system]
+requires = [
+    "pdm-backend",
+]
+build-backend = "pdm.backend"
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.4.2",
+]
+dev = [
+    "pip>=19.2.3",
+    "tox-pdm>=0.7.0",
+    "pdm-bump>=0.7.0",
+    "wheel>=0.33.6",
+    "watchdog>=0.9.0",
+    "flake8>=3.7.8",
+    "coverage>=4.5.4",
+    "twine>=1.14.0",
+    "black>=21.7b0",
+    "pre-commit>=3.4.0",
+]
+doc = [
+    "sphinx",
+    "myst-nb",
+    "sphinx-rtd-theme",
+]
+
+[tool.black]
+line-length = 99
+target-version = [
+    "py39",
+    "py310",
+    "py311",
+    "py312",
+]
+include = "\\.pyi?$"
+exclude = "/(\n  \\.toml\n  |\\.sh\n  |\\.git\n  |\\.ini\n  |Dockerfile\n  |Jenkinfile\n)/\n"
