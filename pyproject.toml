@@ -18,7 +18,11 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-dependencies = []
+dependencies = [
+    "plotly>=5.18.0",
+    "numpy>=1.26.4",
+    "kaleido==0.2.1",
+]
 
 [project.optional-dependencies]
 notebooks = [
