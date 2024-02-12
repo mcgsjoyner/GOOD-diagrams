@@ -1,4 +1,4 @@
-% This script provided by Aaron Masters, February 2024
+% This script provided by Aaron Master, February 2024
 
 % Let's make some good diagrams
 % Start with basic shape, then automate making rows etc
@@ -184,4 +184,3 @@ else
 end
 set(hAx,'Units',axun)
 end
-

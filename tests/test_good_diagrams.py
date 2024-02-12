@@ -5,7 +5,7 @@
 import pytest
 
 
-from good_diagrams import good_diagrams
+from good_diagrams import figure
 
 
 @pytest.fixture
