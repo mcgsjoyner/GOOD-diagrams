@@ -83,7 +83,6 @@ def draw_layer(Lprev, px, L, cx, activation, nthLayer, biasFlag=1):
             font_family="Times",
         )
         annotations.append(annotation)
-        # text(cx+w/2, cy+h/2,['\fontname{Times} a_{',num2str(l),'}^[^{',num2str(nthLayer),'}^]'])
         l = l - 1
 
         # TODO: italic
@@ -105,11 +104,6 @@ def draw_layer(Lprev, px, L, cx, activation, nthLayer, biasFlag=1):
                 # lower of (1) previous layer -L/2 or (2) average of -Lprev/2 and -L/2
                 previous, current = -Lprev / 2 + 0.4, -L / 2 + 1
                 my_y = min(previous, sum([previous, current]) / 2)
-                ##[xx,yy] = datc2figc([px+.9*w, cx-w/2*cos(atan((py-cy)/(px-cx)))],...
-                ##                    [py+h/2, cy-h/2*sin(atan((py-cy)/(px-cx)))]);
-                # [xx,yy] = datc2figc([my_x, cx-w/2*cos(atan((py-cy)/(px-cx)))],...
-                #                   [my_y, cy-h/2*sin(atan((py-cy)/(px-cx)))]);
-                # annotation("arrow",xx,yy,'HeadStyle','plain','LineWidth',0.5,'HeadLength',7,'HeadWidth',5)
 
                 tmp = np.arctan((py - cy) / (px - cx))
                 trace = go.Scatter(
@@ -121,7 +115,6 @@ def draw_layer(Lprev, px, L, cx, activation, nthLayer, biasFlag=1):
                 traces.append(trace)
 
                 # place "1" on a line for arrows entering layer
-                # plot([px+.6*w, px+.9*w],[py+h/2,py+h/2],'k')
                 trace = go.Scatter(
                     x=[my_x - 0.3 * w, my_x],
                     y=[my_y, my_y],
@@ -139,12 +132,7 @@ def draw_layer(Lprev, px, L, cx, activation, nthLayer, biasFlag=1):
                     xanchor="left",
                 )
                 annotations.append(annotation)
-                ##text(px+0.6*w,py+.7*h,'\fontname{Cambria Math}1')
-                # text(my_x-.3*w,my_y+h/4,'\fontname{Cambria Math}1')
             else:  # regular node
-                # [xx,yy] = datc2figc([px, cx-w/2*cos(atan((py-cy)/(px-cx)))],...
-                #                    [py, cy-h/2*sin(atan((py-cy)/(px-cx)))]);
-                # annotation("arrow",xx,yy,'HeadStyle','plain','LineWidth',0.5,'HeadLength',7,'HeadWidth',5)
                 tmp = np.arctan((py - cy) / (px - cx))
                 trace = go.Scatter(
                     x=[px, cx - w / 2 * np.cos(tmp)],
@@ -163,17 +151,7 @@ def build_figure(layers, inputDims):
     maxNodesInOneLayer = max(layer.node_count for layer in layers)
     # OK, so only issue with fixing it at this is that the BIAS arrows can cross some nodes... so look into that
     baselineSpacing = 3.5  # 2.5
-    # layerSpacing = 3.5*ones(1,Nlayers)
-    layerSpacing = [0] * Nlayers
-    # layerSpacing(1) = 0.25*nodesPerLayer(1)/inputDims+baselineSpacing;
-    layerSpacing[0] = baselineSpacing
-    # + 0.4*nodesPerLayer(1) - 0.4*(nodesPerLayer(1)/inputDims);
-
-    for nthLayer in range(1, Nlayers):
-        # layerSpacing(nthLayer) = 0.25*nodesPerLayer(nthLayer)/nodesPerLayer(nthLayer-1) + baselineSpacing;
-        layerSpacing[nthLayer] = baselineSpacing
-        # + 0.4*nodesPerLayer(nthLayer) - 0.4*(nodesPerLayer(nthLayer)/nodesPerLayer(nthLayer-1));
-        # layerSpacing(nthLayer) = baselineSpacing + 0.4*max([nodesPerLayer(nthLayer),nodesPerLayer(nthLayer-1)]);
+    layerSpacing = [baselineSpacing] * Nlayers
 
     xaxis = go.layout.XAxis(
         range=[0, sum(layerSpacing) * (1 + 1 / (2 * len(layerSpacing)))],
