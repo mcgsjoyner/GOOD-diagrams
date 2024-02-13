@@ -3,7 +3,7 @@ from good_diagrams import figure as gd
 
 def main():
     # The input dimensionality (how many nodes)
-    inputDims = 2
+    count_inputs = 2
 
     layers = [
         gd.LayerSpec(6, gd.RELU, True),
@@ -14,8 +14,8 @@ def main():
         gd.LayerSpec(1, gd.SIGMA, True),
     ]
 
-    hFig = gd.build_figure(layers, inputDims)
-    hFig.show(renderer="browser")
+    fig = gd.build_figure(layers, count_inputs)
+    fig.show(renderer="browser")
 
 
 if __name__ == "__main__":
