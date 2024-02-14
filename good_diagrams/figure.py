@@ -16,155 +16,93 @@ LayerSpec = namedtuple(
     defaults=[1, "", True],
 )
 
+STYLE_LINE = go.scatter.Line(color="black", width=0.5)
+WIDTH_SOMA = 0.85
+HEIGHT_SOMA = 0.65
+WIDTH_AXON = 0.8 * WIDTH_SOMA
+# OK, so only issue with fixing it at this is that the BIAS arrows can cross some nodes... so look into that
+WIDTH_SYNAPSE = 3.5  # 2.5
 
-def draw_input(count_inputs, x_center, width, height):
+
+def draw_input(count_inputs, x_center):
     """Function to draw the input layer and create hooks to it"""
-    index_node = count_inputs
     traces = []
     annotations = []
-    line_style = go.scatter.Line(color="black", width=0.5)
-    marker_style = go.scatter.Marker(opacity=0)
-    for y_center in np.arange(start=-count_inputs / 2 + 1, stop=count_inputs / 2 + 1, step=1):
-        trace = go.Scatter(
-            x=[x_center + width / 2, x_center + width],
-            y=[y_center, y_center],
-            line=line_style,
-            marker=marker_style,
-        )
-        annotation = go.layout.Annotation(
-            x=x_center + width / 2,
-            y=y_center + height / 2,
-            text=f"<i>x<sub>{index_node}</sub></i>",
-            showarrow=False,
-            xanchor="left",
-            font_family="Times",
+    for i in range(count_inputs):
+        index_node = count_inputs - i
+        trace, annotation = draw_response(
+            x_center=x_center,
+            y_center=i - count_inputs / 2 + 1,
+            str_response=f"<i>x<sub>{index_node}</sub></i>",
         )
         traces.append(trace)
+        annotation.font.family = "Times"
         annotations.append(annotation)
-        index_node = index_node - 1
     count_nodes_previous = count_inputs
-    x_previous = x_center + width
+    x_previous = x_center + WIDTH_SOMA / 2 + WIDTH_AXON
     return count_nodes_previous, x_previous, traces, annotations
 
 
-def draw_node(width, height, x_center, y_center):
+def draw_node(x_center, y_center, str_activation):
     """Function to draw the "D"-shaped node for GOOD diagrams"""
     rotation = np.pi * np.arange(start=1 / 2, step=1 / 50, stop=3 / 2 + 1 / 50)
-    outline_node = go.Scatter(
-        x=width / 2 * np.stack([1] + list(np.cos(rotation)) + [1, 1]) + x_center,
-        y=height / 2 * np.stack([1] + list(np.sin(rotation)) + [-1, 1]) + y_center,
+    trace = go.Scatter(
+        x=WIDTH_SOMA / 2 * np.stack([1] + list(np.cos(rotation)) + [1, 1]) + x_center,
+        y=HEIGHT_SOMA / 2 * np.stack([1] + list(np.sin(rotation)) + [-1, 1]) + y_center,
         line=go.scatter.Line(color="black", width=0.5),
     )
-    return outline_node
+    annotation = go.layout.Annotation(
+        x=x_center + WIDTH_SOMA / 2,
+        y=y_center - HEIGHT_SOMA / 2,
+        text=str_activation,
+        showarrow=False,
+        xanchor="right",
+        yanchor="bottom",
+        # TODO: italic
+        font=go.layout.annotation.Font(family="Script MT Bold", size=8),
+    )
+    return trace, annotation
 
 
-def draw_layer(
-    count_nodes_previous,
-    x_previous,
-    count_nodes,
-    x_center,
-    activation_str,
-    index_layer,
-    show_bias=1,
-):
-    width, height = 0.85, 0.65
-    index_node = count_nodes
-    traces, annotations = [], []
-    line_style = go.scatter.Line(color="black", width=0.5)
+def draw_response(
+    x_center: float, y_center: float, str_response: str
+) -> (go.Trace, go.Annotation):
+    trace = go.Scatter(
+        x=x_center + WIDTH_SOMA / 2 + np.array([0, WIDTH_AXON]),
+        y=[y_center, y_center],
+        line=STYLE_LINE,
+        marker=go.scatter.Marker(opacity=0),
+    )
+    annotation = go.layout.Annotation(
+        x=x_center + WIDTH_SOMA / 2,
+        y=y_center + HEIGHT_SOMA / 2,
+        text=str_response,
+        showarrow=False,
+        xanchor="left",
+        yanchor="middle",
+        font=go.layout.annotation.Font(family="Times"),
+    )
+    return trace, annotation
+
+
+def draw_connection(x_start, x_center, y_start, y_center):
     marker_style = go.scatter.Marker(
         color="black", angleref="previous", symbol="arrow", opacity=[0, 1]
     )
-    for y_center in np.arange(-count_nodes / 2 + 1, count_nodes / 2 + 1, step=1):
-        traces.append(draw_node(width, height, x_center, y_center))
-        trace = go.Scatter(
-            x=x_center + width * np.array([0.5, 1.3]),
-            y=[y_center, y_center],
-            line=line_style,
-            marker=go.scatter.Marker(opacity=0),
-        )  # draw line activation label goes on top of
-        traces.append(trace)
-        annotation = go.layout.Annotation(
-            x=x_center + width / 2,
-            y=y_center + height / 2,
-            text=f"a<sub>{index_node}</sub><sup>[{index_layer + 1}]</sup>",
-            showarrow=False,
-            xanchor="left",
-            yanchor="middle",
-            font_family="Times",
-        )
-        annotations.append(annotation)
-        index_node = index_node - 1
-
-        # TODO: italic
-        annotation = go.layout.Annotation(
-            x=x_center + width / 2,
-            y=y_center - height / 2,
-            text=f"<i>{activation_str}</i>",
-            showarrow=False,
-            xanchor="right",
-            yanchor="bottom",
-            font_family="Script MT Bold",
-            font_size=8,
-        )
-        annotations.append(annotation)
-        # Show connections from previous layer and for bias
-        for y_previous in np.arange(
-            -count_nodes_previous / 2, count_nodes_previous / 2 + 1, step=1
-        ):
-            if (y_previous == -count_nodes_previous / 2) and (show_bias == 1):
-                x_bias = 0.7 * x_previous + 0.3 * x_center
-
-                previous, current = -count_nodes_previous / 2 + 0.4, -count_nodes / 2 + 1
-                y_bias = min(previous, sum([previous, current]) / 2)
-
-                angle_to_layer = np.arctan((y_previous - y_center) / (x_previous - x_center))
-                trace = go.Scatter(
-                    x=[x_bias, x_center - width / 2 * np.cos(angle_to_layer)],
-                    y=[y_bias, y_center - height / 2 * np.sin(angle_to_layer)],
-                    line=line_style,
-                    marker=marker_style,
-                )
-                traces.append(trace)
-
-                # place "1" on a line for arrows entering layer
-                trace = go.Scatter(
-                    x=[x_bias - 0.3 * width, x_bias],
-                    y=[y_bias, y_bias],
-                    line=line_style,
-                    marker=go.scatter.Marker(opacity=0),
-                )
-                traces.append(trace)
-
-                annotation = go.layout.Annotation(
-                    x=x_bias - 0.3 * width,
-                    y=y_bias + height / 4,
-                    font=go.layout.annotation.Font(family="Cambria Math", size=8),
-                    text="1",
-                    showarrow=False,
-                    xanchor="left",
-                )
-                annotations.append(annotation)
-            else:  # regular node
-                tmp = np.arctan((y_previous - y_center) / (x_previous - x_center))
-                trace = go.Scatter(
-                    x=[x_previous, x_center - width / 2 * np.cos(tmp)],
-                    y=[y_previous, y_center - height / 2 * np.sin(tmp)],
-                    line=go.scatter.Line(color="black", width=0.5),
-                    marker=marker_style,
-                )
-                traces.append(trace)
-    count_nodes_previous = count_nodes
-    x_previous = x_center + 1.3 * width
-    return count_nodes_previous, x_previous, traces, annotations
+    angle_to_layer = np.arctan((y_start - y_center) / (x_start - x_center))
+    trace = go.Scatter(
+        x=[x_start, x_center - WIDTH_SOMA / 2 * np.cos(angle_to_layer)],
+        y=[y_start, y_center - HEIGHT_SOMA / 2 * np.sin(angle_to_layer)],
+        line=STYLE_LINE,
+        marker=marker_style,
+    )
+    return trace
 
 
 def build_figure(layers, count_inputs):
     count_layers = len(layers)
     max_count_nodes = max(layer.node_count for layer in layers)
-    node_width, node_height = 0.85, 0.65
-    # OK, so only issue with fixing it at this is that the BIAS arrows can cross some nodes... so look into that
-    spacing_baseline = 3.5  # 2.5
-    spacing_layer = [spacing_baseline] * count_layers
+    spacing_layer = [WIDTH_SYNAPSE] * count_layers
 
     xaxis = go.layout.XAxis(
         range=[0, sum(spacing_layer) * (1 + 1 / (2 * len(spacing_layer)))],
@@ -184,25 +122,64 @@ def build_figure(layers, count_inputs):
     fig = go.Figure(layout=layout)
 
     x_center = 0
-    count_nodes_previous, x_previous, traces, annotations = draw_input(
-        count_inputs, x_center, node_width, node_height
-    )
+    count_nodes_previous, x_previous, traces, annotations = draw_input(count_inputs, x_center)
+
+    for index_layer, layer in enumerate(layers):
+        count_nodes = layer.node_count
+        x_center = sum(spacing_layer[: index_layer + 1])
+        str_activation = layer.activation
+
+        for i in range(count_nodes):
+            trace, annotation = draw_node(
+                x_center=x_center,
+                y_center=i - count_nodes / 2 + 1,
+                str_activation=f"<i>{str_activation}</i>",
+            )
+            traces.append(trace)
+            annotations.append(annotation)
+
+        for i in range(count_nodes):
+            index_node = count_nodes - i
+            trace, annotation = draw_response(
+                x_center=x_center,
+                y_center=i - count_nodes / 2 + 1,
+                str_response=f"a<sub>{index_node}</sub><sup>[{index_layer + 1}]</sup>",
+            )
+            traces.append(trace)
+            annotations.append(annotation)
+
+        for i in range(count_nodes):
+            y_center = i - count_nodes / 2 + 1
+            for x in range(count_nodes_previous):
+                y_previous = x - count_nodes_previous / 2 + 1
+                trace = draw_connection(x_previous, x_center, y_previous, y_center)
+                traces.append(trace)
+
+        if layer.show_bias:
+            for i in range(count_nodes):
+                y_center = i - count_nodes / 2 + 1
+                previous, current = -count_nodes_previous / 2 + 0.4, -count_nodes / 2 + 1
+                x_start = 0.7 * x_previous + 0.3 * x_center
+                y_start = min(previous, sum([previous, current]) / 2)
+                trace = draw_connection(x_start, x_center, y_start, y_center)
+                traces.append(trace)
+
+                # place "1" on a line for arrows entering layer
+                trace, annotation = draw_response(
+                    x_center=x_start - WIDTH_SOMA / 2 - WIDTH_AXON,
+                    y_center=y_start,
+                    str_response="1",
+                )
+                annotation.font.family = "Cambria Math"
+                annotation.font.size = 8
+                traces.append(trace)
+                annotations.append(annotation)
+
+        count_nodes_previous = count_nodes
+        x_previous = x_center + WIDTH_SOMA / 2 + WIDTH_AXON
+
     for ann in annotations:
         fig.add_annotation(ann)
     fig.add_traces(traces)
-
-    for i, layer in enumerate(layers):
-        count_nodes_previous, x_previous, traces, annotations = draw_layer(
-            count_nodes_previous=count_nodes_previous,
-            x_previous=x_previous,
-            count_nodes=layer.node_count,
-            x_center=sum(spacing_layer[: i + 1]),
-            activation_str=layer.activation,
-            index_layer=i,
-            show_bias=layer.show_bias,
-        )
-        for ann in annotations:
-            fig.add_annotation(ann)
-        fig.add_traces(traces)
 
     return fig
