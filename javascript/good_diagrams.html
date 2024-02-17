@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GOOD Diagrams (Example)</title>
+</head>
+
+<script type="text/javascript" src="good_diagram.js"></script>
+<body>
+    <div id="svgContainer"></div>
+</body>
+<script type="module">
+    import network from './example.json' assert { type: 'json' };
+    let svg = make_svg_diagram(network);
+    let svgContainer = document.getElementById("svgContainer");
+    svgContainer.appendChild(svg);
+</script>
+</html>

@@ -1,0 +1,11 @@
+{
+    "countInputs": 2,
+    "layers": [
+        {"countNodes": 6, "activation": "\ud835\udce1", "show_bias": true},
+        {"countNodes": 10, "activation": "\ud835\udce1", "show_bias": true},
+        {"countNodes": 7, "activation": "\uD835\uDCE1", "show_bias": true},
+        {"countNodes": 5, "activation": "\uD835\uDCE1", "show_bias": true},
+        {"countNodes": 9, "activation": "\uD835\uDCE1", "show_bias": true},
+        {"countNodes": 1, "activation": "\u03C3", "show_bias": true}
+    ]
+}
