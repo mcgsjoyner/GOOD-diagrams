@@ -1,0 +1,23 @@
+h1 {
+    font-size: 64px;
+}
+
+h1, p {
+    text-align: center;
+}
+
+p {
+    font-size: 32px;
+}
+
+button, input, label {
+    font-size: 20px;
+}
+
+input[type=number] {
+    width: 10%;
+}
+
+label {
+    margin-right: 20px
+}
