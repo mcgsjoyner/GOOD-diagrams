@@ -24,6 +24,27 @@ WIDTH_AXON = 0.8 * WIDTH_SOMA
 WIDTH_SYNAPSE = 3.5  # 2.5
 
 
+def draw_response(
+    x_center: float, y_center: float, str_response: str
+) -> (go.Trace, go.Annotation):
+    trace = go.Scatter(
+        x=x_center + WIDTH_SOMA / 2 + np.array([0, WIDTH_AXON]),
+        y=[y_center, y_center],
+        line=STYLE_LINE,
+        marker=go.scatter.Marker(opacity=0),
+    )
+    annotation = go.layout.Annotation(
+        x=x_center + WIDTH_SOMA / 2,
+        y=y_center + HEIGHT_SOMA / 2,
+        text=str_response,
+        showarrow=False,
+        xanchor="left",
+        yanchor="middle",
+        font=go.layout.annotation.Font(family="Times"),
+    )
+    return trace, annotation
+
+
 def draw_input(count_inputs, x_center):
     """Function to draw the input layer and create hooks to it"""
     traces = []
@@ -60,27 +81,6 @@ def draw_node(x_center, y_center, str_activation):
         yanchor="bottom",
         # TODO: italic
         font=go.layout.annotation.Font(family="Script MT Bold", size=8),
-    )
-    return trace, annotation
-
-
-def draw_response(
-    x_center: float, y_center: float, str_response: str
-) -> (go.Trace, go.Annotation):
-    trace = go.Scatter(
-        x=x_center + WIDTH_SOMA / 2 + np.array([0, WIDTH_AXON]),
-        y=[y_center, y_center],
-        line=STYLE_LINE,
-        marker=go.scatter.Marker(opacity=0),
-    )
-    annotation = go.layout.Annotation(
-        x=x_center + WIDTH_SOMA / 2,
-        y=y_center + HEIGHT_SOMA / 2,
-        text=str_response,
-        showarrow=False,
-        xanchor="left",
-        yanchor="middle",
-        font=go.layout.annotation.Font(family="Times"),
     )
     return trace, annotation
 
@@ -129,35 +129,35 @@ def build_figure(layers, count_inputs):
         x_center = sum(spacing_layer[: index_layer + 1])
         str_activation = layer.activation
 
-        for i in range(count_nodes):
+        for index_node in range(count_nodes):
             trace, annotation = draw_node(
                 x_center=x_center,
-                y_center=i - count_nodes / 2 + 1,
+                y_center=index_node - count_nodes / 2 + 1,
                 str_activation=f"<i>{str_activation}</i>",
             )
             traces.append(trace)
             annotations.append(annotation)
 
-        for i in range(count_nodes):
-            index_node = count_nodes - i
+        for index_node in range(count_nodes):
+            index_node = count_nodes - index_node
             trace, annotation = draw_response(
                 x_center=x_center,
-                y_center=i - count_nodes / 2 + 1,
+                y_center=index_node - count_nodes / 2,
                 str_response=f"a<sub>{index_node}</sub><sup>[{index_layer + 1}]</sup>",
             )
             traces.append(trace)
             annotations.append(annotation)
 
-        for i in range(count_nodes):
-            y_center = i - count_nodes / 2 + 1
+        for index_node in range(count_nodes):
+            y_center = index_node - count_nodes / 2 + 1
             for x in range(count_nodes_previous):
                 y_previous = x - count_nodes_previous / 2 + 1
                 trace = draw_connection(x_previous, x_center, y_previous, y_center)
                 traces.append(trace)
 
         if layer.show_bias:
-            for i in range(count_nodes):
-                y_center = i - count_nodes / 2 + 1
+            for index_node in range(count_nodes):
+                y_center = index_node - count_nodes / 2 + 1
                 previous, current = -count_nodes_previous / 2 + 0.4, -count_nodes / 2 + 1
                 x_start = 0.7 * x_previous + 0.3 * x_center
                 y_start = min(previous, sum([previous, current]) / 2)
