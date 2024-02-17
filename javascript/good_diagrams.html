@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>GOOD Diagrams (Example)</title>
-</head>
-
-<script type="text/javascript" src="good_diagram.js"></script>
-<body>
-    <div id="svgContainer"></div>
-</body>
-<script type="module">
-    import network from './example.json' assert { type: 'json' };
-    let svg = make_svg_diagram(network);
-    let svgContainer = document.getElementById("svgContainer");
-    svgContainer.appendChild(svg);
-</script>
+    <head>
+        <title>GOOD Diagrams (Example)</title>
+        <script type="text/javascript" src="good_diagram.js"></script>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <h1>GOOD diagrams</h1>
+        <p>From the article <a href="https://towardsdatascience.com/please-stop-drawing-neural-networks-wrong-ffd02b67ad77">Please Stop Drawing Neural Networks Wrong</a> by Aaron Master and Doron Bergman</p>
+        <p>Web app built by <a href="https://github.com/mcgsjoyner">McGregor Joyner</a> and hosted <a href="https://github.com/mcgsjoyner/GOOD-diagrams">on Github</a></p>
+        <div id="networkInitializer" align="center">
+            <label for="countInputs">Number of inputs:</label>
+            <input type="number" id="countInputs" name="quantity" min="1" max="10" value="1">
+            <label for="countLayers">Number of layers:</label>
+            <input type="number" id="countLayers" name="quantity" min="1" max="10" value="1">
+            <div id="networkContainer"></div>
+            <input type="submit" id="submitNetwork" value="Build diagram">
+            <button id="downloadButton"> Download diagram </button>
+        </div>
+        <div id="svgContainer" margin-top="100px"></div>
+    </body>
+    <script type="module" src="setup.js"></script>
 </html>

@@ -318,3 +318,29 @@ function make_svg_diagram(network){
     }
     return svg;
 }
+
+function downloadSVG () {
+    svg = document.getElementById("svgContainer");
+
+    // Create element with <a> tag
+    const link = document.createElement("a");
+
+    var serializer = new XMLSerializer();
+    var source = serializer.serializeToString(svg);
+
+    //add xml declaration
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    //convert svg source to URI data scheme.
+    var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+
+    //set url value to a element's href attribute.
+    link.href = url;
+
+    // Add file name
+    link.download = `good-diagram.svg`;
+
+    // Add click event to tag to save file.
+    link.click();
+    URL.revokeObjectURL(link.href);
+}
