@@ -241,10 +241,7 @@ function make_svg_diagram(network){
     diagram_width = sum + WIDTH_AXON + 1.5 * WIDTH_SOMA;
     diagram_height = maxCountNodes + 1;
 
-    svg.setAttribute('transform', get_transformation_matrix(diagram_width, diagram_height));
     svg.setAttribute("aria-hidden","true");
-    svg.setAttribute('width', `${diagram_width}px`);
-    svg.setAttribute('height', `${diagram_height}px`);
     svg.setAttribute('viewBox', `0 -${diagram_height/2} ${diagram_width} ${diagram_height}`);
 
     // build inputs
@@ -317,4 +314,30 @@ function make_svg_diagram(network){
         countNodesPrevious = countNodes;
     }
     return svg;
+}
+
+function downloadSVG () {
+    svg = document.getElementById("svgContainer");
+
+    // Create element with <a> tag
+    const link = document.createElement("a");
+
+    var serializer = new XMLSerializer();
+    var source = serializer.serializeToString(svg);
+
+    //add xml declaration
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+    //convert svg source to URI data scheme.
+    var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+
+    //set url value to a element's href attribute.
+    link.href = url;
+
+    // Add file name
+    link.download = `good-diagram.svg`;
+
+    // Add click event to tag to save file.
+    link.click();
+    URL.revokeObjectURL(link.href);
 }
