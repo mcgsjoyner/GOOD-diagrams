@@ -1,6 +1,6 @@
-=============
-GOOD diagrams
-=============
+======
+|repo|
+======
 
 
 .. image:: https://img.shields.io/pypi/v/good_diagrams.svg
@@ -29,3 +29,4 @@ This package was created with Cookiecutter_ and the `mcgsjoyner/cookiecutter-pyp
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`mcgsjoyner/cookiecutter-pypackage-pdm`: https://github.com/mcgsjoyner/cookiecutter-pypackage-pdm
+.. |repo| replace:: GOOD diagrams
