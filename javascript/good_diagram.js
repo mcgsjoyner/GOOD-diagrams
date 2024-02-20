@@ -241,10 +241,7 @@ function make_svg_diagram(network){
     diagram_width = sum + WIDTH_AXON + 1.5 * WIDTH_SOMA;
     diagram_height = maxCountNodes + 1;
 
-    svg.setAttribute('transform', get_transformation_matrix(diagram_width, diagram_height));
     svg.setAttribute("aria-hidden","true");
-    svg.setAttribute('width', `${diagram_width}px`);
-    svg.setAttribute('height', `${diagram_height}px`);
     svg.setAttribute('viewBox', `0 -${diagram_height/2} ${diagram_width} ${diagram_height}`);
 
     // build inputs
