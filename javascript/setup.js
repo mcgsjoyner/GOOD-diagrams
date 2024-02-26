@@ -2,6 +2,7 @@ const downloadButton = document.querySelector("#downloadButton");
 downloadButton.addEventListener("click", (event) => {downloadSVG();});
 
 const submitNetwork = document.querySelector("#submitNetwork");
+
 submitNetwork.addEventListener("click", (event) => {
     let networkContainer = document.getElementById("networkContainer");
     var layers = Array.from(networkContainer.children).map(
