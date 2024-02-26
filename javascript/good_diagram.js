@@ -57,17 +57,17 @@ function parse_xml_to_svg_nodes(xml_str, font_size) {
     let newText = document.createElementNS(svgNS,"text");
     newText.appendChild(document.createTextNode(""))
 
-    baseline_shift = 0;
+    alignment_baseline = "middle";
     while (xml_str.length > 0) {
         let chunks = xml_str.split("<");
 
         let tspan = document.createElementNS(svgNS, "tspan");
         tspan.textContent = chunks[0];
-        tspan.setAttributeNS(null,"baseline-shift", baseline_shift);
-        tspan.setAttributeNS(null,"font-size", (baseline_shift == 0) ? font_size : font_size*.7);
+        tspan.setAttributeNS(null,"alignment-baseline", alignment_baseline);
+        tspan.setAttributeNS(null,"font-size", (alignment_baseline == "middle") ? font_size : font_size*.7);
         newText.appendChild(tspan);
 
-        baseline_shift = 0;
+        alignment_baseline = "middle";
         if (chunks.length == 1) {
             // only standard text remains
             xml_str = "";
@@ -80,10 +80,10 @@ function parse_xml_to_svg_nodes(xml_str, font_size) {
 
         switch (tag) {
             case "sub":
-                baseline_shift = "sub";
+                alignment_baseline = "hanging";
                 break;
             case "sup":
-                baseline_shift = "super";
+                alignment_baseline = "baseline";
                 break;
             case "/su":
                 xml_str = xml_str.slice(1,);
@@ -154,7 +154,7 @@ function make_svg_response_line(xCenter, yCenter) {
 function make_svg_response_text(xCenter, yCenter, str_response) {
     let annotation = parse_xml_to_svg_nodes(str_response, FONT_SIZE_RESPONSE);
     annotation.setAttributeNS(null,"x", xCenter + WIDTH_SOMA / 2 + FONT_SIZE_RESPONSE / 2);
-    annotation.setAttributeNS(null,"y", yCenter - FONT_SIZE_RESPONSE/2);
+    annotation.setAttributeNS(null,"y", yCenter - .7*FONT_SIZE_RESPONSE);
     annotation.setAttributeNS(null,"font-size", FONT_SIZE_RESPONSE);
     return annotation;
 }
