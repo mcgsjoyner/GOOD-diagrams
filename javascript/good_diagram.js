@@ -2,9 +2,6 @@ import { validateType, get_transformation_matrix, Layer } from './utils.js';
 
 const svgNS = "http://www.w3.org/2000/svg";
 
-const RELU = "\ud835\udce1";
-const SIGMA = "\u03C3";
-
 // The diagram is sized based on a grid of tiles, one for each node.
 // The following numbers should be in the unit interval.
 const WIDTH_SOMA = 0.85;
@@ -302,7 +299,8 @@ export function update_svg_diagram() {
     svgContainer.replaceChildren(svg);
 }
 
-export function update_dynamic_layer_form() {
+export function update_dynamic_layer_form(activationOptions) {
+    update_activation_options();
     let networkContainer = document.getElementById("networkContainer");
     let countLayers = document.getElementById("countLayers");
     while (networkContainer.children.length > countLayers.value) {
@@ -330,15 +328,8 @@ export function update_dynamic_layer_form() {
         div.appendChild(label);
 
         let select = document.createElement("select");
-        const reluOption = document.createElement("option");
-        reluOption.text = RELU;
-        reluOption.value = RELU;
-        const sigmaOption = document.createElement("option");
-        sigmaOption.text = SIGMA;
-        sigmaOption.value = SIGMA;
-        select.id = `activation{indexLayer}`;
-        select.appendChild(reluOption);
-        select.appendChild(sigmaOption);
+        select.id = `activation${indexLayer}`;
+        select.value = null;
         div.appendChild(select);
 
         label = document.createElement("label");
@@ -352,4 +343,48 @@ export function update_dynamic_layer_form() {
 
         networkContainer.appendChild(div);
     }
+    let options = get_activation_options();
+    let currentValue = options[0];
+    for (let indexLayer = 0; indexLayer < countLayers.value; indexLayer++) {
+        let select = document.getElementById(`activation${indexLayer}`);
+        if (select.value) {
+            currentValue = select.value;
+        }
+        select.replaceChildren([]);
+        for (let act of options) {
+            let option = document.createElement("option");
+            option.text = act;
+            option.value = act;
+            select.appendChild(option);
+        }
+        console.log(currentValue);
+        select.value = currentValue;
+    }
+}
+
+function get_activation_options() {
+    const delimiter = ";";
+    let activationOptionString = document.getElementById("activationEntryLabel").title;
+    let activationOptions = activationOptionString.split(delimiter);
+    return activationOptions;
+}
+
+export function update_activation_options () {
+    const RELU = "\ud835\udce1";
+    const SIGMA = "\u03C3";
+    const delimiter = ";";
+
+    let activationEntry = document.getElementById("activationEntry").value;
+    let activationOptions = get_activation_options();
+    activationOptions.push(RELU);
+    activationOptions.push(SIGMA);
+    activationOptions.push(activationEntry);
+
+    function onlyUnique(value, index, array) {
+        let result = array.indexOf(value) === index;
+        result = result && !(value.trim().length === 0);
+        return result;
+    }
+    activationOptions = activationOptions.filter(onlyUnique);
+    document.getElementById("activationEntryLabel").title = activationOptions.join(delimiter);
 }

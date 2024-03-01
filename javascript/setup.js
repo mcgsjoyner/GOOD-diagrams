@@ -5,6 +5,8 @@ function set_up_event_listeners() {
     document.getElementById("downloadButton").addEventListener("click", downloadSVG);
     document.getElementById("submitNetwork").addEventListener("click", update_svg_diagram);
     document.getElementById("countLayers").addEventListener("input", update_dynamic_layer_form);
+    document.getElementById("submitActivationEntry").addEventListener("click", update_dynamic_layer_form);
+    update_dynamic_layer_form();
 }
 
 window.onload = set_up_event_listeners();
