@@ -1,3 +1,5 @@
+import { validateType, get_transformation_matrix, Layer } from './utils.js';
+
 const svgNS = "http://www.w3.org/2000/svg";
 
 const RELU = "\ud835\udce1";
@@ -26,24 +28,6 @@ const FONT_FAMILY_DEFAULT = "Times";
 const FONT_FAMILY_ACTIVATION = "Script MT Bold";
 const FONT_FAMILY_BIAS = "Cambria Math";
 
-function validateType(arg, name, typeExpected) {
-    if (typeof arg != typeExpected){throw Error(`Expecting ${typeExpected} for ${name}, got ${typeof arg}!`)};
-}
-
-class Layer {
-    constructor(countNodes, activation, show_bias) {
-        validateType(countNodes, "countNodes", "number");
-        if (!Number.isInteger(countNodes)){throw Error(`Input {countNodes} is not an integer!`)};
-        this.countNodes = countNodes;
-
-        validateType(activation, "activation", "string");
-        this.activation = activation;
-
-        validateType(show_bias, "show_bias", "boolean");
-        this.show_bias = show_bias;
-    }
-}
-
 
 function parse_xml_to_svg_nodes(xml_str, font_size) {
     /*
@@ -57,7 +41,7 @@ function parse_xml_to_svg_nodes(xml_str, font_size) {
     let newText = document.createElementNS(svgNS,"text");
     newText.appendChild(document.createTextNode(""))
 
-    alignment_baseline = "middle";
+    let alignment_baseline = "middle";
     while (xml_str.length > 0) {
         let chunks = xml_str.split("<");
 
@@ -75,7 +59,7 @@ function parse_xml_to_svg_nodes(xml_str, font_size) {
         }
 
         xml_str = chunks.slice(1,).join("<");
-        tag = xml_str.slice(0,3);
+        let tag = xml_str.slice(0,3);
         xml_str = xml_str.slice(4,);
 
         switch (tag) {
@@ -95,16 +79,6 @@ function parse_xml_to_svg_nodes(xml_str, font_size) {
     return newText;
 }
 
-function get_transformation_matrix(diagram_width, diagram_height) {
-    let height = self.innerHeight;
-    let margin = .025;
-    PIX_PER_NODE = (1 - 2 * margin) * height / diagram_height;
-    translateX = PIX_PER_NODE * diagram_width / 2 / (1 - margin);
-    translateY = PIX_PER_NODE * diagram_height / 2 / (1 - margin);
-    transform = `matrix(${PIX_PER_NODE} 0 0 ${PIX_PER_NODE} ${translateX} ${translateY})`;
-    return transform;
-}
-
 function define_svg_arrow(size) {
     let arrow = document.createElementNS(svgNS, 'marker');
     arrow.setAttributeNS(null, "id", "arrow");
@@ -113,7 +87,7 @@ function define_svg_arrow(size) {
     arrow.setAttributeNS(null, "refX", size);
     arrow.setAttributeNS(null, "refY", size/2);
     arrow.setAttributeNS(null, "orient", "auto-start-reverse");
-    path = document.createElementNS(svgNS, "path");
+    let path = document.createElementNS(svgNS, "path");
     path.setAttributeNS(null, "d", `M 0 0 L ${size} ${size/2} L 0 ${size} z`);
     arrow.appendChild(path);
     return arrow;
@@ -131,7 +105,7 @@ function define_svg_node_path() {
     const top_ray = `L 0 ${top}`;
     const left_arc = `A ${radius_x} ${radius_y} 0 1 0 0 ${bottom}`;
     const bottom_ray = `L ${right} ${bottom}`;
-    d = [start, top_ray, left_arc, bottom_ray, "Z"].join(" ");
+    let d = [start, top_ray, left_arc, bottom_ray, "Z"].join(" ");
     path.setAttribute('d', d);
     path.setAttribute('stroke', STROKE_COLOR);
     path.setAttribute('stroke-width', STROKE_WIDTH);
@@ -207,9 +181,9 @@ function make_svg_node_activation_text(str, xCenter, yCenter) {
 
 function make_svg_connection_line(x_start, xCenter, y_start, y_center) {
     let trace = document.createElementNS(svgNS, 'line');
-    angle_to_layer = Math.atan((y_start - y_center) / (x_start - xCenter));
-    x2 = xCenter - WIDTH_SOMA / 2 * Math.cos(angle_to_layer);
-    y2 = y_center - HEIGHT_SOMA / 2 * Math.sin(angle_to_layer);
+    let angle_to_layer = Math.atan((y_start - y_center) / (x_start - xCenter));
+    let x2 = xCenter - WIDTH_SOMA / 2 * Math.cos(angle_to_layer);
+    let y2 = y_center - HEIGHT_SOMA / 2 * Math.sin(angle_to_layer);
     trace.setAttributeNS(null, "x1", x_start);
     trace.setAttributeNS(null, "x2", x2);
     trace.setAttributeNS(null, "y1", y_start);
@@ -230,44 +204,44 @@ function make_svg_diagram(network){
 
     let svg = document.createElementNS(svgNS, "svg");
     let defs = document.createElementNS(svgNS, "defs");
-    defs.appendChild(define_svg_arrow(size=10));
+    defs.appendChild(define_svg_arrow(10));
     defs.appendChild(define_svg_node_path());
     svg.appendChild(defs);
 
-    countLayers = arrayLayerSpec.length;
+    let countLayers = arrayLayerSpec.length;
     const maxCountNodes = arrayLayerSpec.reduce((a, b) => Math.max(a, b.countNodes), 0);
-    spacingLayer = Array(countLayers).fill(WIDTH_SYNAPSE);
+    let spacingLayer = Array(countLayers).fill(WIDTH_SYNAPSE);
     const sum = spacingLayer.reduce((partialSum, a) => partialSum + a, 0);
-    diagram_width = sum + WIDTH_AXON + 1.5 * WIDTH_SOMA;
-    diagram_height = maxCountNodes + 1;
+    let diagram_width = sum + WIDTH_AXON + 1.5 * WIDTH_SOMA;
+    let diagram_height = maxCountNodes + 1;
 
     svg.setAttribute("aria-hidden","true");
     svg.setAttribute('viewBox', `0 -${diagram_height/2} ${diagram_width} ${diagram_height}`);
 
     // build inputs
     let xCenter = 0;
-    for (i = 0; i < countInputs; i++){
+    for (let i = 0; i < countInputs; i++){
         let yCenter = i - (countInputs - 1) / 2;
-        indexNode = countInputs - i;
-        str_response = `x<sub>${indexNode}</sub>`;
-        trace = make_svg_response_line(xCenter, yCenter);
-        annotation = make_svg_response_text(xCenter, yCenter, str_response);
+        let indexNode = countInputs - i;
+        let str_response = `x<sub>${indexNode}</sub>`;
+        let trace = make_svg_response_line(xCenter, yCenter);
+        let annotation = make_svg_response_text(xCenter, yCenter, str_response);
         annotation.setAttributeNS(null,"font-family", FONT_FAMILY_DEFAULT);
         annotation.setAttributeNS(null,"font-style", "italic");
         svg.appendChild(annotation);
         svg.appendChild(trace);
     }
-    countNodesPrevious = countInputs;
-    xPrevious = xCenter + WIDTH_SOMA / 2 + WIDTH_AXON;
+    let countNodesPrevious = countInputs;
+    let xPrevious = xCenter + WIDTH_SOMA / 2 + WIDTH_AXON;
 
-    for (indexLayer = 0; indexLayer < countLayers; indexLayer++) {
+    for (let indexLayer = 0; indexLayer < countLayers; indexLayer++) {
         const layer = arrayLayerSpec[indexLayer];
         let countNodes = layer.countNodes;
         let str_activation = layer.activation;
 
         xCenter += spacingLayer[indexLayer];
 
-        for (indexNode = 0; indexNode < countNodes; indexNode++) {
+        for (let indexNode = 0; indexNode < countNodes; indexNode++) {
             let yCenter = indexNode - (countNodes - 1) / 2;
             let response_text = `a<sub>${indexNode+1}</sub><sup>[${indexLayer+1}]</sup>`;
 
@@ -280,8 +254,8 @@ function make_svg_diagram(network){
             svg.appendChild(make_svg_response_text(xCenter, yCenter, response_text));
             svg.appendChild(make_svg_response_line(xCenter, yCenter));
 
-            for (indexNodePrevious = 0; indexNodePrevious < countNodesPrevious; indexNodePrevious++){
-                connection_svg_path = make_svg_connection_line(
+            for (let indexNodePrevious = 0; indexNodePrevious < countNodesPrevious; indexNodePrevious++){
+                let connection_svg_path = make_svg_connection_line(
                     xCenter - WIDTH_SYNAPSE + WIDTH_SOMA / 2 + WIDTH_AXON,
                     xCenter,
                     indexNodePrevious - (countNodesPrevious - 1) / 2,
@@ -296,13 +270,13 @@ function make_svg_diagram(network){
                 let yCenter = indexNode - (countNodes - 1) / 2;
                 let xPrevious = 0.3 * xCenter + 0.7 * (xCenter - WIDTH_SYNAPSE + WIDTH_SOMA / 2 + WIDTH_AXON);
                 let yPrevious = Math.max(previous, (previous + current) / 2);
-                connection_svg_path = make_svg_connection_line(xPrevious, xCenter, yPrevious, yCenter);
+                let connection_svg_path = make_svg_connection_line(xPrevious, xCenter, yPrevious, yCenter);
                 svg.appendChild(connection_svg_path);
 
                 // place "1" on a line for arrows entering layer
                 let xStart = xPrevious - WIDTH_SOMA / 2 - WIDTH_AXON;
-                trace = make_svg_response_line(xStart, yPrevious);
-                annotation = make_svg_response_text(xStart, yPrevious, str_response="1");
+                let trace = make_svg_response_line(xStart, yPrevious);
+                let annotation = make_svg_response_text(xStart, yPrevious, "1");
                 trace.setAttributeNS(null, "x1", xStart + (WIDTH_SOMA + WIDTH_AXON) / 2);
                 annotation.setAttributeNS(null, "x", xStart + (WIDTH_SOMA + WIDTH_AXON) / 2 + FONT_SIZE_RESPONSE / 4);
                 annotation.setAttributeNS(null,"font-size", FONT_SIZE_BIAS);
@@ -316,28 +290,66 @@ function make_svg_diagram(network){
     return svg;
 }
 
-function downloadSVG () {
-    svg = document.getElementById("svgContainer");
+export function update_svg_diagram() {
+    let networkContainer = document.getElementById("networkContainer");
+    let layers = Array.from(networkContainer.children).map(
+        child => new Layer(Number(child.children[2].value), child.children[4].value, child.children[6].checked)
+    );
+    const countInputs = document.getElementById("countInputs");
+    let network = {"countInputs": Number(countInputs.value), "layers": layers}
+    let svg = make_svg_diagram(network);
+    let svgContainer = document.getElementById("svgContainer");
+    svgContainer.replaceChildren(svg);
+}
 
-    // Create element with <a> tag
-    const link = document.createElement("a");
+export function update_dynamic_layer_form() {
+    let networkContainer = document.getElementById("networkContainer");
+    let countLayers = document.getElementById("countLayers");
+    while (networkContainer.children.length > countLayers.value) {
+        networkContainer.removeChild(networkContainer.lastChild);
+    }
+    for (let indexLayer = networkContainer.children.length; indexLayer < countLayers.value; indexLayer++) {
+        let div = document.createElement("div");
+        let label = document.createElement("label");
+        label.innerHTML = `Layer #${indexLayer + 1}\t`;
+        div.appendChild(label);
 
-    var serializer = new XMLSerializer();
-    var source = serializer.serializeToString(svg);
+        label = document.createElement("label");
+        label.innerHTML = "Number of nodes";
+        div.appendChild(label);
 
-    //add xml declaration
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+        let input = document.createElement("input");
+        input.type = "number";
+        input.value = 1;
+        input.min = 1;
+        input.id = `countNodes${indexLayer}`;
+        div.appendChild(input);
 
-    //convert svg source to URI data scheme.
-    var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+        label = document.createElement("label");
+        label.innerHTML = "Activation";
+        div.appendChild(label);
 
-    //set url value to a element's href attribute.
-    link.href = url;
+        let select = document.createElement("select");
+        const reluOption = document.createElement("option");
+        reluOption.text = RELU;
+        reluOption.value = RELU;
+        const sigmaOption = document.createElement("option");
+        sigmaOption.text = SIGMA;
+        sigmaOption.value = SIGMA;
+        select.id = `activation{indexLayer}`;
+        select.appendChild(reluOption);
+        select.appendChild(sigmaOption);
+        div.appendChild(select);
 
-    // Add file name
-    link.download = `good-diagram.svg`;
+        label = document.createElement("label");
+        label.innerHTML = "Show bias";
+        div.appendChild(label);
 
-    // Add click event to tag to save file.
-    link.click();
-    URL.revokeObjectURL(link.href);
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        div.appendChild(checkbox);
+
+        networkContainer.appendChild(div);
+    }
 }
